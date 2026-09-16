@@ -60,3 +60,60 @@ function withDataLock(callable $operation): mixed
         fclose($lock);  
     }
 }
+
+function insertUser(array $user): array
+{
+    return withDataLock(function () use ($user): array{
+        $data = loadData();
+
+        $id = $data['nextId'];
+        $data['nextId'] = $id + 1;
+
+        $user['id'] = $id;
+        $data['users'][] = $user;
+
+        saveData($data);
+
+        return $user;
+    });
+}
+
+function updateUser(int $id, array $fields): ?array
+{
+    return withDataLock(function () use ($id, $fields): ?array {
+        $data = loadData();
+        $users = $data['users'];
+
+        for ($i = 0; $i < count($users); $i++) {
+            if ($users[$i]['id'] === $id) {
+                $data['users'][$i] = array_merge($users[$i], $fields);
+                saveData($data);
+
+                return $data['users'][$i];
+            }
+        }
+
+        return null;
+    });
+}
+
+function deleteUsers(int $id): ?array
+{
+    return withDataLock(function () use ($id): ?array {
+        $data = loadData();
+        $users = $data['users'];
+
+        for($i = 0; $i < count($users); $i++){
+            if ($users[$i]['id'] === $id){
+                $user = $users[$i];
+                array_splice($users, $i, 1);
+                $data['users'] = $users;
+                saveData($data);
+
+                return $user;
+            }
+        }
+
+        return null;
+    });
+}
