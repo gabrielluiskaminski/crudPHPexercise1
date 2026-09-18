@@ -97,7 +97,7 @@ function updateUser(int $id, array $fields): ?array
     });
 }
 
-function deleteUsers(int $id): ?array
+function deleteUser(int $id): ?array
 {
     return withDataLock(function () use ($id): ?array {
         $data = loadData();
