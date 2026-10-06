@@ -24,3 +24,32 @@ function hideError() {
     formError.classList.add('d-none');
     formError.textContent = '';
 }
+
+function getUserFromCard(button) {
+    const card = button.closest('user-card');
+    return findUserById(Number(card.id));
+}
+
+function enterEditMode(user) {
+    editingId = user.id;
+    originalUser = { ...user };
+    document.getElementById('name').value = user.name;
+    document.getElementById('age').value = user.age;
+    document.getElementById('email').value = user.email;
+    formTitle.textContent = 'Edit user';
+    submitBtn.textContent = 'Update';
+    cancelBtn.style.display = '';
+    document.getElementById('name').focus();
+}
+
+function exitEditMode() {
+    editingId = null;
+    originalUser = null;
+    formTitle.textContent = 'Create User';
+    submitBtn.textContent = 'Create';
+    cancelBtn.textContent = 'none';
+    form.reset();
+}
+
+cancelBtn.addEventListener('click', exitEditMode);
+
