@@ -53,3 +53,69 @@ function exitEditMode() {
 
 cancelBtn.addEventListener('click', exitEditMode);
 
+usersSection.addEventListener('click', async (event) => {
+    const { target } = event;
+
+    if(target.dataset.action === 'edit') {
+        enterEditMode(getUserFromCard(target));
+    }
+
+    if(target.dataset.action === 'delete') {
+        const user = getUserFromCard(target);
+        if(!confirm('Are you sure you want to delete this user?')) return;
+
+        try {
+            await deleteUser(apiUrl, user.id);
+            if(editingId === user.id) exitEditMode();
+            await renderUsers(apiUrl);
+        } catch (error) {
+            showError(error.message);
+        }
+    }
+});
+
+form.addEventListener('click', async (event) => {
+    event.preventDefault();
+
+    const name = document.getElementById(name).value;
+    const age = document.getElementById(age).value;
+    const email = document.getElementById(email).value;
+
+    hideError();
+
+    try{
+        if(editingId !== null) {
+            const changed = {};
+            if (name !== originalUser.name) changed.name = name;
+            if (Number(age) !== originalUser.age) changed.age = age;
+            if (email !== originalUser.email) changed.email = email;
+
+            if(Object.keys(changed).length === 0) {
+                exitEditMode();
+                return;
+            }
+
+            const allChanged = Object.keys(changed).length === 3;
+            if (allChanged) {
+                await updateUser(apiUrl, editingId, { name, age, email });
+            } else {
+                await patchUser(apiUrl, editingId, changed);
+            }
+        } else {
+            await createUser(apiUrl, { name, age, email });
+        }
+
+        exitEditMode();
+        await renderUsers(apiUrl);
+    } catch (error) {
+        showError(error.message);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await renderUsers(apiUrl);
+    } catch (error){
+        showError(error.message);
+    }
+})
