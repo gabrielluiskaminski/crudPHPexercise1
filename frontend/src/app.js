@@ -77,9 +77,9 @@ usersSection.addEventListener('click', async (event) => {
 form.addEventListener('click', async (event) => {
     event.preventDefault();
 
-    const name = document.getElementById(name).value;
-    const age = document.getElementById(age).value;
-    const email = document.getElementById(email).value;
+    const name = document.getElementById('name').value;
+    const age = document.getElementById('age').value;
+    const email = document.getElementById('email').value;
 
     hideError();
 
