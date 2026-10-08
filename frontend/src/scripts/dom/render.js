@@ -18,18 +18,18 @@ function escapeHtml(value) {
 export async function renderUsers(apiUrl) {
     const users = await getUsers(apiUrl);
     usersCache = users;
-    const usersSection = document.getElementById('');
+    const usersSection = document.getElementById('users');
 
-    if (users.lenght === 0){
+    if (users.length === 0){
         usersSection.innerHTML = '<p class="text-muted">No users found.</p>';
         return;
     }
 
-    usersSection.innerText = '';
+    usersSection.innerHTML = '';
 
     users.forEach((user) => {
         const userDiv = document.createElement('div');
-        userDiv.classlist.add('col-md-3');
+        userDiv.classList.add('col-md-3');
 
         userDiv.innerHTML = `
             <div class="card user-card h-100" id="${escapeHtml(user.id)}">

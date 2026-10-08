@@ -5,6 +5,7 @@ import { updateUser, patchUser } from './scripts/api/update.js';
 
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/users';
 
+// Referências do DOM
 const form = document.getElementById('create-user-form');
 const formError = document.getElementById('form-error');
 const formTitle = document.getElementById('form-title');
@@ -12,9 +13,11 @@ const submitBtn = form.querySelector('button[type="submit"]');
 const cancelBtn = document.getElementById('cancel-edit');
 const usersSection = document.getElementById('users');
 
+// Estado de edição
 let editingId = null;
 let originalUser = null;
 
+// --- Helpers de erro ---
 function showError(message) {
     formError.textContent = message;
     formError.classList.remove('d-none');
@@ -25,8 +28,9 @@ function hideError() {
     formError.textContent = '';
 }
 
+// --- Helpers de edição ---
 function getUserFromCard(button) {
-    const card = button.closest('user-card');
+    const card = button.closest('.user-card');
     return findUserById(Number(card.id));
 }
 
@@ -36,7 +40,7 @@ function enterEditMode(user) {
     document.getElementById('name').value = user.name;
     document.getElementById('age').value = user.age;
     document.getElementById('email').value = user.email;
-    formTitle.textContent = 'Edit user';
+    formTitle.textContent = 'Edit User';
     submitBtn.textContent = 'Update';
     cancelBtn.style.display = '';
     document.getElementById('name').focus();
@@ -47,26 +51,27 @@ function exitEditMode() {
     originalUser = null;
     formTitle.textContent = 'Create User';
     submitBtn.textContent = 'Create';
-    cancelBtn.textContent = 'none';
+    cancelBtn.style.display = 'none';
     form.reset();
 }
 
 cancelBtn.addEventListener('click', exitEditMode);
 
+// --- Delegação de eventos nos cards ---
 usersSection.addEventListener('click', async (event) => {
     const { target } = event;
 
-    if(target.dataset.action === 'edit') {
+    if (target.dataset.action === 'edit') {
         enterEditMode(getUserFromCard(target));
     }
 
-    if(target.dataset.action === 'delete') {
+    if (target.dataset.action === 'delete') {
         const user = getUserFromCard(target);
-        if(!confirm('Are you sure you want to delete this user?')) return;
+        if (!confirm('Are you sure you want to delete this user?')) return;
 
         try {
             await deleteUser(apiUrl, user.id);
-            if(editingId === user.id) exitEditMode();
+            if (editingId === user.id) exitEditMode();
             await renderUsers(apiUrl);
         } catch (error) {
             showError(error.message);
@@ -74,7 +79,8 @@ usersSection.addEventListener('click', async (event) => {
     }
 });
 
-form.addEventListener('click', async (event) => {
+// --- Submit: cria ou edita ---
+form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const name = document.getElementById('name').value;
@@ -83,14 +89,15 @@ form.addEventListener('click', async (event) => {
 
     hideError();
 
-    try{
-        if(editingId !== null) {
+    try {
+        if (editingId !== null) {
+            // MODO EDIÇÃO — descobre o que mudou
             const changed = {};
             if (name !== originalUser.name) changed.name = name;
             if (Number(age) !== originalUser.age) changed.age = age;
             if (email !== originalUser.email) changed.email = email;
 
-            if(Object.keys(changed).length === 0) {
+            if (Object.keys(changed).length === 0) {
                 exitEditMode();
                 return;
             }
@@ -102,6 +109,7 @@ form.addEventListener('click', async (event) => {
                 await patchUser(apiUrl, editingId, changed);
             }
         } else {
+            // MODO CRIAÇÃO
             await createUser(apiUrl, { name, age, email });
         }
 
@@ -112,10 +120,11 @@ form.addEventListener('click', async (event) => {
     }
 });
 
+// --- Primeira renderização ---
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         await renderUsers(apiUrl);
-    } catch (error){
+    } catch (error) {
         showError(error.message);
     }
-})
+});
